@@ -32,19 +32,6 @@ No built-in telemetry endpoints are present in the active frontend or Tauri runt
 
 These are network calls, but they stay on the local machine unless the configured local service is itself remote.
 
-### Local backend API
-
-- **Endpoint**: `http://localhost:5167`
-- **Purpose**:
-  - Meeting retrieval
-  - Meeting persistence
-  - Legacy/alternate backend endpoints
-  - Backend availability tests
-- **Source files**:
-  - `frontend/src-tauri/src/api/api.rs`
-  - `frontend/src/components/Sidebar/SidebarProvider.tsx`
-  - `frontend/src-tauri/tauri.conf.json`
-
 ### Local transcription stream / whisper server
 
 - **Endpoint**: `http://127.0.0.1:8178` / `http://127.0.0.1:8178/stream`
@@ -122,24 +109,23 @@ Examples identified during the audit include:
 
 The Tauri CSP in `frontend/src-tauri/tauri.conf.json` explicitly allows:
 
-- `http://localhost:5167`
 - `http://localhost:8178`
 
 This is an allowlist, not proof that all of these are actively used in every runtime path. It does, however, show intended network destinations.
 
-## 7. Backend-specific note
+## 7. Summary-provider note
 
-The repository also contains a Python backend in `backend/app/` with outbound summary-provider calls to:
+The codebase still supports outbound summary-provider calls to:
 
 - A user-configured OpenAI-compatible endpoint
 
-No backend telemetry implementation was identified during this audit.
+No telemetry implementation was identified during this audit.
 
 ## 8. Bottom line
 
 The codebase currently supports or performs outbound calls in these categories:
 
-1. **Local app/service traffic**: localhost backend, localhost transcription server
+1. **Local app/service traffic**: localhost transcription server
 2. **Optional remote AI calls**: user-configured custom OpenAI-compatible endpoint
 3. **Downloads**: Whisper, Parakeet, built-in models, FFmpeg
 4. **User-initiated external links**

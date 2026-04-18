@@ -69,8 +69,6 @@ clean_start_backend.cmd               # Start server
 
 ### Service Endpoints
 - **Whisper Server**: http://localhost:8178
-- **Backend API**: http://localhost:5167
-- **Backend Docs**: http://localhost:5167/docs
 - **Frontend Dev**: http://localhost:3118
 
 ## High-Level Architecture
@@ -196,7 +194,7 @@ await listen<TranscriptUpdate>('transcript-update', (event) => {
 ### Whisper Model Management
 
 **Model Storage Locations**:
-- **Development**: `frontend/models/` or `backend/whisper-server-package/models/`
+- **Development**: `frontend/models/`
 - **Production (macOS)**: `~/Library/Application Support/Meetily/models/`
 - **Production (Windows)**: `%APPDATA%\Meetily\models\`
 
@@ -257,8 +255,8 @@ macro_rules! perf_debug {
 
 **Sidebar Context** (components/Sidebar/SidebarProvider.tsx):
 - Global state for meetings list, current meeting, recording status
-- Communicates with backend API (http://localhost:5167)
-- Manages WebSocket connections for real-time updates
+- Uses Tauri commands to load meetings and summaries
+- Manages summary polling and UI synchronization
 
 **Pattern**: Tauri commands update Rust state → Emit events → Frontend listeners update React state → Context propagates to components
 
@@ -309,22 +307,12 @@ RUST_LOG=app_lib::audio=debug ./clean_run.sh
 # Check Developer Console in the app (Cmd+Shift+I on macOS)
 ```
 
-### Backend API Development
+### Native API Development
 
-**Adding New Endpoints** (backend/app/main.py):
-```python
-@app.post("/api/my-endpoint")
-async def my_endpoint(request: MyRequest) -> MyResponse:
-    # Use DatabaseManager for persistence
-    db = DatabaseManager()
-    result = await db.some_operation()
-    return result
-```
-
-**Database Operations** (backend/app/db.py):
-- All meeting data stored in SQLite
-- Use `DatabaseManager` class for all DB operations
-- Async operations with `aiosqlite`
+**Adding New Tauri Commands**:
+- Prefer adding commands in `frontend/src-tauri/src/lib.rs` and the relevant Rust module
+- Use repository/database abstractions under `frontend/src-tauri/src/database/`
+- Return serializable types for frontend `invoke()` callers
 
 ## Testing and Debugging
 
@@ -343,18 +331,6 @@ $env:RUST_LOG="debug"; ./clean_run_windows.bat
 - Open DevTools: `Cmd+Shift+I` (macOS) or `Ctrl+Shift+I` (Windows)
 - Console Toggle: Built into app UI (console icon)
 - View Rust logs: Check terminal output
-
-### Backend Debugging
-
-**View API Logs**:
-```bash
-# Backend logs show in terminal with detailed formatting:
-# 2025-01-03 12:34:56 - INFO - [main.py:123 - endpoint_name()] - Message
-```
-
-**Test API Directly**:
-- Swagger UI: http://localhost:5167/docs
-- ReDoc: http://localhost:5167/redoc
 
 ### Audio Pipeline Debugging
 
@@ -416,17 +392,13 @@ $env:RUST_LOG="debug"; ./clean_run_windows.bat
 
 3. **Whisper Model Loading**: Models are loaded once and cached. Changing models requires app restart or manual unload/reload.
 
-4. **Backend Dependency**: Frontend can run standalone (local Whisper), but meeting persistence and LLM features require backend running.
+4. **File Paths**: Use Tauri's path APIs (`downloadDir`, etc.) for cross-platform compatibility. Never hardcode paths.
 
-5. **CORS Configuration**: Backend allows all origins (`"*"`) for development. Restrict for production deployment.
-
-6. **File Paths**: Use Tauri's path APIs (`downloadDir`, etc.) for cross-platform compatibility. Never hardcode paths.
-
-7. **Audio Permissions**: Request permissions early. macOS requires both microphone AND screen recording for system audio.
+5. **Audio Permissions**: Request permissions early. macOS requires both microphone AND screen recording for system audio.
 
 ## Repository-Specific Conventions
 
-- **Logging Format**: Backend uses detailed formatting with filename:line:function
+- **Logging Format**: Rust logging is used throughout the desktop app and related services
 - **Error Handling**: Rust uses `anyhow::Result`, frontend uses try-catch with user-friendly messages
 - **Naming**: Audio devices use "microphone" and "system" consistently (not "input"/"output")
 - **Git Branches**:
@@ -440,7 +412,7 @@ $env:RUST_LOG="debug"; ./clean_run_windows.bat
 **Core Coordination**:
 - [frontend/src-tauri/src/lib.rs](frontend/src-tauri/src/lib.rs) - Main Tauri entry point, command registration
 - [frontend/src-tauri/src/audio/mod.rs](frontend/src-tauri/src/audio/mod.rs) - Audio module exports
-- [backend/app/main.py](backend/app/main.py) - FastAPI application, API endpoints
+- [frontend/src-tauri/src/summary/commands.rs](frontend/src-tauri/src/summary/commands.rs) - Summary command entry points
 
 **Audio System**:
 - [frontend/src-tauri/src/audio/recording_manager.rs](frontend/src-tauri/src/audio/recording_manager.rs) - Recording orchestration
