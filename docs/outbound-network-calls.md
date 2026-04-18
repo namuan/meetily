@@ -70,14 +70,6 @@ These calls occur only when a user supplies and selects a remote OpenAI-compatib
 - **Source file**:
   - `frontend/src-tauri/src/parakeet_engine/parakeet_engine.rs`
 
-### Built-in summary model imports
-
-- **Host**: None
-- **Purpose**: Reuse built-in summary model files already present in the local Hugging Face cache by linking them into the app models directory
-- **Source files**:
-  - `frontend/src-tauri/src/summary/summary_engine/models.rs`
-  - `frontend/src-tauri/src/summary/summary_engine/model_manager.rs`
-
 ## 5. CSP / allowlisted network destinations
 
 The Tauri CSP in `frontend/src-tauri/tauri.conf.json` explicitly allows:
