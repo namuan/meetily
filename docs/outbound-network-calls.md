@@ -65,17 +65,15 @@ These calls occur only when a user supplies and selects a remote OpenAI-compatib
 
 ### Parakeet model downloads
 
-- **Hosts**:
-  - `https://huggingface.co`
-  - `https://meetily.towardsgeneralintelligence.com`
+- **Host**: `https://huggingface.co`
 - **Purpose**: Download Parakeet model assets
 - **Source file**:
   - `frontend/src-tauri/src/parakeet_engine/parakeet_engine.rs`
 
-### Built-in summary model downloads
+### Built-in summary model imports
 
-- **Host**: `https://meetily.towardsgeneralintelligence.com`
-- **Purpose**: Download built-in summary model files
+- **Host**: None
+- **Purpose**: Reuse built-in summary model files already present in the local Hugging Face cache by linking them into the app models directory
 - **Source files**:
   - `frontend/src-tauri/src/summary/summary_engine/models.rs`
   - `frontend/src-tauri/src/summary/summary_engine/model_manager.rs`
