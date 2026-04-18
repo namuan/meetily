@@ -78,32 +78,7 @@ These calls occur only when a user supplies and selects a remote OpenAI-compatib
   - `frontend/src-tauri/src/summary/summary_engine/models.rs`
   - `frontend/src-tauri/src/summary/summary_engine/model_manager.rs`
 
-### FFmpeg auto-download
-
-- **Endpoint/host**: Determined by the `ffmpeg_sidecar` crate at runtime
-- **Purpose**: Download FFmpeg if not already available locally
-- **Source file**:
-  - `frontend/src-tauri/src/audio/ffmpeg.rs`
-- **Important note**:
-  - The repository code calls `check_latest_version`, `ffmpeg_download_url`, and `download_ffmpeg_package`, but the exact remote download URL is supplied by the dependency rather than hardcoded in this repo.
-
-## 5. User-initiated external link opens
-
-These are not background API calls, but they do open external destinations from the app.
-
-Examples identified during the audit include:
-
-- `https://github.com/Zackriya-Solutions/meeting-minutes/blob/main/PRIVACY_POLICY.md`
-- `https://meetily.zackriya.com/#about`
-- `https://github.com/Zackriya-Solutions/meeting-minutes`
-
-**Source files** include:
-
-- `frontend/src/components/ModelSettingsModal.tsx`
-- `frontend/src/components/About.tsx`
-- `frontend/src/components/onboarding/steps/SetupOverviewStep.tsx`
-
-## 6. CSP / allowlisted network destinations
+## 5. CSP / allowlisted network destinations
 
 The Tauri CSP in `frontend/src-tauri/tauri.conf.json` explicitly allows:
 
@@ -111,7 +86,7 @@ The Tauri CSP in `frontend/src-tauri/tauri.conf.json` explicitly allows:
 
 This is an allowlist, not proof that all of these are actively used in every runtime path. It does, however, show intended network destinations.
 
-## 7. Summary-provider note
+## 6. Summary-provider note
 
 The codebase still supports outbound summary-provider calls to:
 
@@ -119,13 +94,12 @@ The codebase still supports outbound summary-provider calls to:
 
 No telemetry implementation was identified during this audit.
 
-## 8. Bottom line
+## 7. Bottom line
 
 The codebase currently supports or performs outbound calls in these categories:
 
 1. **Local app/service traffic**: localhost transcription server
 2. **Optional remote AI calls**: user-configured custom OpenAI-compatible endpoint
-3. **Downloads**: Whisper, Parakeet, built-in models, FFmpeg
-4. **User-initiated external links**
+3. **Downloads**: Whisper, Parakeet
 
 If the goal is a fully offline / zero-egress build, these areas would need to be disabled, removed, or made opt-in with safer defaults.
