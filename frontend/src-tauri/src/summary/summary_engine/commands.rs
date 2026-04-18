@@ -93,7 +93,8 @@ pub async fn builtin_ai_get_model_info<R: Runtime>(
     Ok(info)
 }
 
-/// Download a built-in AI model with progress updates
+/// Import a built-in AI model from the local Hugging Face cache with progress updates.
+/// Command name is kept for frontend compatibility.
 #[tauri::command]
 pub async fn builtin_ai_download_model<R: Runtime>(
     app: AppHandle<R>,
@@ -141,7 +142,7 @@ pub async fn builtin_ai_download_model<R: Runtime>(
         .await
     {
         Ok(_) => {
-            // Download task completed successfully (validation passed, status set to Available)
+            // Import task completed successfully (validation passed, status set to Available)
             let _ = app.emit(
                 "builtin-ai-download-progress",
                 serde_json::json!({
@@ -158,29 +159,24 @@ pub async fn builtin_ai_download_model<R: Runtime>(
         Err(e) => {
             let error_msg = e.to_string();
 
-            // Check if this is a cancellation error (marked with "CANCELLED:" prefix)
-            // Don't emit error event for cancellations - cancel command already emits cancelled event
-            if !error_msg.starts_with("CANCELLED:") {
-                // Emit error via progress event for frontend to display (only for real errors)
-                let _ = app.emit(
-                    "builtin-ai-download-progress",
-                    serde_json::json!({
-                        "model": model_name,
-                        "progress": 0,
-                        "downloaded_mb": 0,
-                        "total_mb": 0,
-                        "speed_mbps": 0,
-                        "status": "error",
-                        "error": error_msg
-                    }),
-                );
-            }
+            let _ = app.emit(
+                "builtin-ai-download-progress",
+                serde_json::json!({
+                    "model": model_name,
+                    "progress": 0,
+                    "downloaded_mb": 0,
+                    "total_mb": 0,
+                    "speed_mbps": 0,
+                    "status": "error",
+                    "error": error_msg
+                }),
+            );
             Err(error_msg)
         }
     }
 }
 
-/// Cancel an ongoing model download
+/// Cancel model import. Local cache linking is immediate, so this is effectively a no-op.
 #[tauri::command]
 pub async fn builtin_ai_cancel_download<R: Runtime>(
     app: AppHandle<R>,

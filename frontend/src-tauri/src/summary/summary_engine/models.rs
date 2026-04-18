@@ -41,8 +41,8 @@ pub struct ModelDef {
     /// Template name for prompt formatting (e.g., "gemma3")
     pub template: String,
 
-    /// Download URL (HuggingFace or other source)
-    pub download_url: String,
+    /// Optional Hugging Face repo id to import from local cache
+    pub huggingface_repo: Option<String>,
 
     /// File size in MB
     pub size_mb: u64,
@@ -69,26 +69,28 @@ pub fn get_available_models() -> Vec<ModelDef> {
         ModelDef {
             name: "gemma3:1b".to_string(),
             display_name: "Gemma 3 1B (Fast)".to_string(),
-            gguf_file: "gemma-3-1b-it-Q8_0.gguf".to_string(),
+            gguf_file: "google_gemma-3-1b-it-qat-Q4_K_M.gguf".to_string(),
             template: "gemma3".to_string(),
-            download_url: "https://meetily.towardsgeneralintelligence.com/models/gemma-3-1b-it-Q8_0.gguf".to_string(),
-            size_mb: 1019,
-            context_size: 32768, 
-            layer_count: 26,     
+            huggingface_repo: Some("bartowski/google_gemma-3-1b-it-qat-GGUF".to_string()),
+            size_mb: 819,
+            context_size: 32768,
+            layer_count: 26,
             sampling: SamplingParams {
                 temperature: 1.0,
                 top_k: 64,
                 top_p: 0.95,
                 stop_tokens: vec!["<end_of_turn>".to_string()],
             },
-            description: "Fastest model. Runs on any hardware with ~1GB RAM. Good for quick summaries.".to_string(),
+            description:
+                "Fastest model. Runs on any hardware with ~1GB RAM. Good for quick summaries."
+                    .to_string(),
         },
         ModelDef {
             name: "gemma3:4b".to_string(),
             display_name: "Gemma 3 4B (Balanced)".to_string(),
             gguf_file: "gemma-3-4b-it-Q4_K_M.gguf".to_string(),
             template: "gemma3".to_string(),
-            download_url: "https://meetily.towardsgeneralintelligence.com/models/gemma-3-4b-it-Q4_K_M.gguf".to_string(),
+            huggingface_repo: None,
             size_mb: 2374,
             context_size: 32768, // Supports 128k, but 32k is good for local·
             layer_count: 35,
@@ -98,7 +100,8 @@ pub fn get_available_models() -> Vec<ModelDef> {
                 top_p: 0.95,
                 stop_tokens: vec!["<end_of_turn>".to_string()],
             },
-            description: "Balanced model. Great quality/speed trade-off. Requires ~3.5GB RAM.".to_string(),
+            description: "Balanced model. Great quality/speed trade-off. Requires ~3.5GB RAM."
+                .to_string(),
         },
     ]
 }
@@ -118,18 +121,52 @@ pub fn get_default_model() -> ModelDef {
 
 /// Resolve model name to full file path in the models directory
 pub fn get_model_path(app_data_dir: &PathBuf, model_name: &str) -> Result<PathBuf> {
-    let model = get_model_by_name(model_name)
-        .ok_or_else(|| anyhow!("Unknown model: {}", model_name))?;
+    let model =
+        get_model_by_name(model_name).ok_or_else(|| anyhow!("Unknown model: {}", model_name))?;
 
-    let models_dir = get_models_directory(app_data_dir);
-    let model_path = models_dir.join(&model.gguf_file);
-
-    Ok(model_path)
+    get_existing_model_path(app_data_dir, &model)
+        .ok_or_else(|| anyhow!("Model file not found for '{}'", model_name))
 }
 
 /// Get the models directory path for built-in AI
 pub fn get_models_directory(app_data_dir: &PathBuf) -> PathBuf {
     app_data_dir.join("models").join("summary")
+}
+
+pub fn get_managed_model_path(app_data_dir: &PathBuf, model_name: &str) -> Result<PathBuf> {
+    let model =
+        get_model_by_name(model_name).ok_or_else(|| anyhow!("Unknown model: {}", model_name))?;
+    Ok(get_models_directory(app_data_dir).join(&model.gguf_file))
+}
+
+pub fn get_existing_model_path(app_data_dir: &PathBuf, model: &ModelDef) -> Option<PathBuf> {
+    let managed_path = get_models_directory(app_data_dir).join(&model.gguf_file);
+    if managed_path.exists() {
+        return Some(managed_path);
+    }
+
+    get_huggingface_cached_model_path(model)
+}
+
+pub fn get_huggingface_cached_model_path(model: &ModelDef) -> Option<PathBuf> {
+    let repo = model.huggingface_repo.as_ref()?;
+    let home_dir = dirs::home_dir()?;
+    let snapshots_dir = home_dir
+        .join(".cache")
+        .join("huggingface")
+        .join("hub")
+        .join(format!("models--{}", repo.replace('/', "--")))
+        .join("snapshots");
+
+    let entries = std::fs::read_dir(snapshots_dir).ok()?;
+    for entry in entries.flatten() {
+        let candidate = entry.path().join(&model.gguf_file);
+        if candidate.exists() {
+            return Some(candidate);
+        }
+    }
+
+    None
 }
 
 // ============================================================================
