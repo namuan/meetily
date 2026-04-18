@@ -27,7 +27,7 @@
                 "default-src": "'self'",
                 "style-src": "'self' 'unsafe-inline'",
                 "img-src": "'self' asset: https://asset.localhost data:",
-                "connect-src": "'self' http://localhost:5167 http://localhost:8178"
+                "connect-src": "'self' http://localhost:8178"
             },
             "assetProtocol": {
                 "enable": true,
