@@ -387,7 +387,6 @@ pub fn run() {
             None::<notifications::manager::NotificationManager<tauri::Wry>>,
         )) as NotificationManagerState<tauri::Wry>)
         .manage(audio::init_system_audio_state())
-        .manage(summary::summary_engine::ModelManagerState(Arc::new(tokio::sync::Mutex::new(None))))
         .setup(|_app| {
             log::info!("Application setup complete");
 
@@ -439,18 +438,6 @@ pub fn run() {
             tauri::async_runtime::spawn(async {
                 if let Err(e) = parakeet_engine::commands::parakeet_init().await {
                     log::error!("Failed to initialize Parakeet engine on startup: {}", e);
-                }
-            });
-
-            // Initialize ModelManager for summary engine (async, non-blocking)
-            let app_handle_for_model_manager = _app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                match summary::summary_engine::commands::init_model_manager_at_startup(&app_handle_for_model_manager).await {
-                    Ok(_) => log::info!("ModelManager initialized successfully at startup"),
-                    Err(e) => {
-                        log::warn!("Failed to initialize ModelManager at startup: {}", e);
-                        log::warn!("ModelManager will be lazy-initialized on first use");
-                    }
                 }
             });
 
@@ -672,11 +659,6 @@ pub fn run() {
                         log::warn!("AppState not available for database cleanup (likely first launch)");
                     }
 
-                    // Clean up sidecar
-                    log::info!("Cleaning up sidecar...");
-                    if let Err(e) = summary::summary_engine::force_shutdown_sidecar().await {
-                        log::error!("Failed to force shutdown sidecar: {}", e);
-                    }
                 });
                 log::info!("Application cleanup complete");
             }

@@ -1,7 +1,7 @@
 /// Summary module - handles all meeting summary generation functionality
 ///
 /// This module contains:
-/// - LLM client for communicating with built-in and custom OpenAI-compatible providers
+/// - LLM client for communicating with custom OpenAI-compatible providers
 /// - Processor for chunking transcripts and generating summaries
 /// - Service layer for orchestrating summary generation
 /// - Templates for structured meeting summary generation
@@ -34,7 +34,6 @@ pub mod commands;
 pub mod llm_client;
 pub mod processor;
 pub mod service;
-pub mod summary_engine;
 pub mod template_commands;
 pub mod templates;
 
