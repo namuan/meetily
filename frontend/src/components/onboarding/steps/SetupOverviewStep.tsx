@@ -89,23 +89,13 @@ export function SetupOverviewStep() {
 
 
         {/* CTA Section */}
-        <div className="w-full max-w-xs space-y-4">
+        <div className="w-full max-w-xs">
           <Button
             onClick={handleContinue}
             className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white"
           >
             Let's Go
           </Button>
-          <div className="text-center">
-            <a
-              href="https://github.com/Zackriya-Solutions/meeting-minutes"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-gray-600 hover:underline"
-            >
-              Report issues on GitHub
-            </a>
-          </div>
         </div>
       </div>
     </OnboardingContainer>

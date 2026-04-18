@@ -36,6 +36,9 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # Find the correct directory - we need to be in frontend root for npm commands
 if [ -f "package.json" ]; then
   FRONTEND_DIR="."
@@ -150,7 +153,6 @@ fi
 
 # The binary is in the workspace target directory, which is one level up from frontend
 # if we are in frontend dir.
-WORKSPACE_ROOT="$FRONTEND_DIR/.."
 SRC_PATH="$WORKSPACE_ROOT/target/release/$BASE_BINARY"
 DEST_PATH="$BINARIES_DIR/$SIDECAR_BINARY"
 
@@ -178,6 +180,21 @@ echo ""
 NO_STRIP=true $PKG_MGR run tauri:build
 
 if [ $? -eq 0 ]; then
+  if [ "$OS" = "macos" ]; then
+    APP_SOURCE_PATH="$(find "$WORKSPACE_ROOT/target/release/bundle" -maxdepth 3 -type d -name 'meetily.app' 2>/dev/null | head -1)"
+    APP_DEST_DIR="$HOME/Applications"
+    APP_DEST_PATH="$APP_DEST_DIR/meetily.app"
+
+    if [ -n "$APP_SOURCE_PATH" ] && [ -d "$APP_SOURCE_PATH" ]; then
+      mkdir -p "$APP_DEST_DIR"
+      rm -rf "$APP_DEST_PATH"
+      mv "$APP_SOURCE_PATH" "$APP_DEST_PATH"
+      echo -e "${GREEN}✅ Installed app to $APP_DEST_PATH${NC}"
+    else
+      echo -e "${YELLOW}⚠️ Built app not found under $WORKSPACE_ROOT/target/release/bundle${NC}"
+    fi
+  fi
+
   echo ""
   echo -e "${GREEN}✅ Build completed successfully!${NC}"
   echo ""
@@ -187,4 +204,3 @@ else
   echo -e "${RED}❌ Build failed${NC}"
   exit 1
 fi
-

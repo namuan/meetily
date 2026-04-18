@@ -54,11 +54,7 @@ openmp = ["whisper-rs/openmp"]     # OpenMP parallel processing
 
 [build-dependencies]
 tauri-build = { version = "2.3.0", features = [] }
-reqwest = { version = "0.11", features = ["blocking", "multipart", "json", "stream"] }
 which = "6.0.1"
-zip = "2.2"           # ZIP extraction (Windows, macOS)
-tar = "0.4"           # TAR extraction (Linux)
-xz2 = "0.1"           # XZ decompression (Linux)
 
 
 [dependencies]
@@ -139,8 +135,6 @@ rayon = "1.10"
 rubato = "0.15.0"
 ringbuf = "0.4.8"
 tempfile = "3.3.0"
-
-ffmpeg-sidecar = { git = "https://github.com/nathanbabcock/ffmpeg-sidecar", branch = "main" }
 
 sqlx = { version = "0.8", features = [ "runtime-tokio", "sqlite", "chrono"] }
 

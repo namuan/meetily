@@ -573,7 +573,6 @@ pub fn run() {
             api::api_save_meeting_title,
             api::api_save_transcript,
             api::open_meeting_folder,
-            api::open_external_url,
             // Custom OpenAI commands
             api::api_save_custom_openai_config,
             api::api_get_custom_openai_config,

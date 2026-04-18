@@ -83,8 +83,7 @@
             "appimage",
             "msi",
             "nsis",
-            "app",
-            "dmg"
+            "app"
         ],
         "icon": [
             "icons/icon.png",

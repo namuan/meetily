@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { invoke } from '@tauri-apps/api/core';
 import { getVersion } from '@tauri-apps/api/app';
 import Image from 'next/image';
-import { Button } from './ui/button';
 
 export function About() {
     const [currentVersion, setCurrentVersion] = useState<string>('0.3.0');
@@ -10,14 +8,6 @@ export function About() {
     useEffect(() => {
         getVersion().then(setCurrentVersion).catch(console.error);
     }, []);
-
-    const handleContactClick = async () => {
-        try {
-            await invoke('open_external_url', { url: 'https://meetily.zackriya.com/#about' });
-        } catch (error) {
-            console.error('Failed to open link:', error);
-        }
-    };
 
     return (
         <div className="p-4 space-y-4 h-[80vh] overflow-y-auto">
@@ -71,16 +61,10 @@ export function About() {
 
             {/* CTA Section - Compact */}
             <div className="text-center space-y-2">
-                <h3 className="text-medium font-semibold text-gray-800">Ready to push your business further?</h3>
+                <h3 className="text-medium font-semibold text-gray-800">Built for private, local-first meetings</h3>
                 <p className="text-s text-gray-600">
-                    If you're planning to build privacy-first custom AI agents or a fully tailored product for your <span className="font-bold">business</span>, we can help you build it.
+                    Meetily keeps transcription local by default and lets you configure summary generation to match your environment.
                 </p>
-                <button
-                    onClick={handleContactClick}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition-colors duration-200 shadow-sm hover:shadow-md"
-                >
-                    Chat with the Zackriya team
-                </button>
             </div>
 
             {/* Footer - Compact */}
